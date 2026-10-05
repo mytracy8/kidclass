@@ -1,0 +1,1244 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#6C5CE7">
+<title>童學管家 KidClass</title>
+<link rel="manifest" href="manifest.json">
+<style>
+/* ===== CSS Variables & Reset ===== */
+:root {
+  --primary: #6C5CE7;
+  --primary-light: #A29BFE;
+  --accent: #FF6B6B;
+  --success: #00B894;
+  --warning: #FDCB6E;
+  --bg: #F8F9FE;
+  --card: #FFFFFF;
+  --text: #2D3436;
+  --text-light: #636E72;
+  --border: #E0E0E0;
+  --shadow: 0 2px 12px rgba(108,92,231,0.1);
+  --radius: 14px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 80px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== Header ===== */
+.header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  padding: 16px 20px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header h1 { font-size: 20px; font-weight: 700; }
+.header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+/* ===== Bottom Tab Bar ===== */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card);
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 0 env(safe-area-inset-bottom, 8px);
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+  z-index: 100;
+}
+.tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 10px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.tab-btn.active { color: var(--primary); }
+.tab-btn .icon { font-size: 22px; }
+
+/* ===== Page Container ===== */
+.page { display: none; padding: 16px; animation: fadeIn 0.3s; }
+.page.active { display: block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+/* ===== Cards ===== */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ===== Summary Stats ===== */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.stat-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.stat-card .label { font-size: 11px; color: var(--text-light); }
+.stat-card .value { font-size: 22px; font-weight: 700; color: var(--primary); margin-top: 4px; }
+.stat-card .sub { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+/* ===== Forms ===== */
+.form-group { margin-bottom: 14px; }
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 5px;
+}
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-appearance: none;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(108,92,231,0.15);
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:active { background: #5A4BD1; transform: scale(0.98); }
+.btn-danger { background: var(--accent); color: white; }
+.btn-outline { background: none; border: 1.5px solid var(--primary); color: var(--primary); }
+.btn-sm { padding: 7px 14px; font-size: 12px; width: auto; }
+
+/* ===== List Items ===== */
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.list-item:last-child { border-bottom: none; }
+.list-item .emoji { font-size: 28px; }
+.list-item .info { flex: 1; }
+.list-item .info .name { font-size: 14px; font-weight: 600; }
+.list-item .info .detail { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+.list-item .badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-ok { background: #E8F5E9; color: #2E7D32; }
+.badge-warn { background: #FFF3E0; color: #E65100; }
+.badge-danger { background: #FFEBEE; color: #C62828; }
+
+/* ===== Schedule Items ===== */
+.schedule-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  background: var(--bg);
+  gap: 10px;
+}
+.schedule-item .dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.schedule-item .time { font-size: 13px; font-weight: 600; min-width: 50px; }
+.schedule-item .title { font-size: 13px; flex: 1; }
+.status-scheduled .dot { background: var(--primary); }
+.status-completed .dot { background: var(--success); }
+.status-absent .dot { background: var(--accent); }
+.status-makeup .dot { background: var(--warning); }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--card);
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px env(safe-area-inset-bottom, 20px);
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:none} }
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.modal-header h3 { font-size: 17px; font-weight: 700; }
+.modal-close {
+  background: var(--bg);
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* ===== Calendar Grid ===== */
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.cal-header h3 { font-size: 16px; font-weight: 700; }
+.cal-nav { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px 10px; }
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+.cal-grid .day-label { font-size: 11px; color: var(--text-light); padding: 4px; font-weight: 600; }
+.cal-grid .day {
+  padding: 8px 4px;
+  font-size: 13px;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+}
+.cal-grid .day:active { background: var(--bg); }
+.cal-grid .day.today { background: var(--primary); color: white; font-weight: 700; }
+.cal-grid .day.has-event::after {
+  content: '';
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.cal-grid .day.other-month { color: #CCC; }
+
+/* ===== Share Text Box ===== */
+.share-box {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* ===== Empty State ===== */
+.empty { text-align: center; padding: 40px 20px; color: var(--text-light); }
+.empty .icon { font-size: 48px; margin-bottom: 10px; }
+.empty p { font-size: 13px; }
+
+/* ===== Action Buttons Row ===== */
+.action-row { display: flex; gap: 8px; margin-top: 10px; }
+.action-row .btn { flex: 1; }
+
+/* ===== Misc ===== */
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 16px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  background: var(--bg);
+  color: var(--text-light);
+  margin: 2px 4px 2px 0;
+}
+.divider { height: 1px; background: var(--border); margin: 12px 0; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mb-12 { margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<div class="header">
+  <h1>🎒 童學管家</h1>
+  <p id="headerDate"></p>
+</div>
+
+<!-- ===== Page 1: 費用管理 ===== -->
+<div class="page active" id="page-expense">
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="label">本月支出</div>
+      <div class="value" id="monthlyTotal">$0</div>
+      <div class="sub" id="monthLabel"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">本年支出</div>
+      <div class="value" id="yearlyTotal">$0</div>
+      <div class="sub" id="yearLabel"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary mb-12" onclick="openModal('invoiceModal')">➕ 新增發票 / 繳費記錄</button>
+
+  <div class="section-title">📄 繳費記錄</div>
+  <div class="card" id="invoiceList">
+    <div class="empty"><div class="icon">📄</div><p>尚無繳費記錄<br>點擊上方按鈕新增</p></div>
+  </div>
+</div>
+
+<!-- ===== Page 2: 課程日曆 ===== -->
+<div class="page" id="page-calendar">
+  <div class="card">
+    <div class="cal-header">
+      <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+      <h3 id="calMonthTitle"></h3>
+      <button class="cal-nav" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+  <div class="section-title">📋 <span id="selectedDateTitle">今日課程</span></div>
+  <div id="daySchedule">
+    <div class="empty"><div class="icon">📅</div><p>今日無課程</p></div>
+  </div>
+
+  <button class="btn btn-primary mt-12" onclick="openModal('scheduleModal')">➕ 新增課堂</button>
+</div>
+
+<!-- ===== Page 3: 活動提醒 ===== -->
+<div class="page" id="page-events">
+  <button class="btn btn-primary mb-12" onclick="openModal('eventModal')">➕ 新增活動 / 提醒</button>
+
+  <div class="section-title">📌 即將到來</div>
+  <div id="upcomingEvents">
+    <div class="empty"><div class="icon">🎉</div><p>尚無活動<br>記得添加幼稚園活動和要帶的物品</p></div>
+  </div>
+</div>
+
+<!-- ===== Page 4: 堂數追蹤 ===== -->
+<div class="page" id="page-classes">
+  <button class="btn btn-primary mb-12" onclick="openModal('classModal')">➕ 新增課程</button>
+
+  <div class="section-title">📚 課程列表</div>
+  <div id="classList">
+    <div class="empty"><div class="icon">📚</div><p>尚無課程<br>先新增課程類別</p></div>
+  </div>
+</div>
+
+<!-- ===== Page 5: 日曆分享 ===== -->
+<div class="page" id="page-share">
+  <div class="card">
+    <div class="card-title">📤 匯出行程到 WhatsApp</div>
+    <div class="form-group">
+      <label>選擇匯出方式</label>
+      <select id="shareType" onchange="updateSharePreview()">
+        <option value="day">指定日期</option>
+        <option value="week">指定一週</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>選擇日期</label>
+      <input type="date" id="shareDate" onchange="updateSharePreview()">
+    </div>
+    <div class="divider"></div>
+    <div class="card-title">📋 預覽</div>
+    <div class="share-box" id="sharePreview">選擇日期以生成行程文字...</div>
+    <div class="action-row mt-12">
+      <button class="btn btn-primary" onclick="copyShareText()">📋 複製文字</button>
+    </div>
+  </div>
+
+  <div class="card mt-12">
+    <div class="card-title">💾 數據管理</div>
+    <div class="action-row">
+      <button class="btn btn-outline btn-sm" onclick="exportData()">📥 匯出備份</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('importFile').click()">📤 匯入備份</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+</div>
+
+<!-- ===== Bottom Tab Bar ===== -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('expense')">
+    <span class="icon">💰</span>費用
+  </button>
+  <button class="tab-btn" onclick="switchTab('calendar')">
+    <span class="icon">📅</span>日曆
+  </button>
+  <button class="tab-btn" onclick="switchTab('events')">
+    <span class="icon">🔔</span>活動
+  </button>
+  <button class="tab-btn" onclick="switchTab('classes')">
+    <span class="icon">📚</span>課程
+  </button>
+  <button class="tab-btn" onclick="switchTab('share')">
+    <span class="icon">📤</span>分享
+  </button>
+</div>
+
+<!-- ===== Modal: 新增發票 ===== -->
+<div class="modal-overlay" id="invoiceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📄 新增繳費記錄</h3>
+      <button class="modal-close" onclick="closeModal('invoiceModal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>課程名稱</label>
+      <select id="invClass"><option value="">-- 請先新增課程 --</option></select>
+    </div>
+    <div class="form-group">
+      <label>金額 ($)</label>
+      <input type="number" id="invAmount" placeholder="例如：3000">
+    </div>
+    <div class="form-group">
+      <label>堂數</label>
+      <input type="number" id="invLessons" placeholder="例如：10">
+    </div>
+    <div class="form-group">
+      <label>繳費日期</label>
+      <input type="date" id="invDate">
+    </div>
+    <div class="form-group">
+      <label>備註（選填）</label>
+      <input type="text" id="invNote" placeholder="例如：第二期學費">
+    </div>
+    <button class="btn btn-primary" onclick="saveInvoice()">💾 儲存</button>
+  </div>
+</div>
+
+<!-- ===== Modal: 新增課堂 ===== -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📅 新增 / 修改課堂</h3>
+      <button class="modal-close" onclick="closeModal('scheduleModal')">✕</button>
+    </div>
+    <input type="hidden" id="schEditId" value="">
+    <div class="form-group">
+      <label>課程名稱</label>
+      <select id="schClass"><option value="">-- 請選擇 --</option></select>
+    </div>
+    <div class="form-group">
+      <label>日期</label>
+      <input type="date" id="schDate">
+    </div>
+    <div class="form-group">
+      <label>時間</label>
+      <input type="time" id="schTime">
+    </div>
+    <div class="form-group">
+      <label>狀態</label>
+      <select id="schStatus">
+        <option value="scheduled">已排課</option>
+        <option value="completed">已完成</option>
+        <option value="absent">缺課</option>
+        <option value="makeup">補堂</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>備註（選填）</label>
+      <input type="text" id="schNote" placeholder="例如：補堂 - 原 10/5 的課">
+    </div>
+    <button class="btn btn-primary" onclick="saveSchedule()">💾 儲存</button>
+    <button class="btn btn-danger mt-8" id="schDeleteBtn" style="display:none" onclick="deleteSchedule()">🗑️ 刪除此課堂</button>
+  </div>
+</div>
+
+<!-- ===== Modal: 新增活動 ===== -->
+<div class="modal-overlay" id="eventModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🎉 新增活動提醒</h3>
+      <button class="modal-close" onclick="closeModal('eventModal')">✕</button>
+    </div>
+    <input type="hidden" id="evtEditId" value="">
+    <div class="form-group">
+      <label>活動名稱</label>
+      <input type="text" id="evtTitle" placeholder="例如：運動會">
+    </div>
+    <div class="form-group">
+      <label>日期</label>
+      <input type="date" id="evtDate">
+    </div>
+    <div class="form-group">
+      <label>時間（選填）</label>
+      <input type="time" id="evtTime">
+    </div>
+    <div class="form-group">
+      <label>需要攜帶的物品</label>
+      <input type="text" id="evtItems" placeholder="例如：運動服、水壺、毛巾（用逗號分隔）">
+    </div>
+    <div class="form-group">
+      <label>提前提醒（天數）</label>
+      <select id="evtReminder">
+        <option value="0">當天提醒</option>
+        <option value="1" selected>提前 1 天</option>
+        <option value="2">提前 2 天</option>
+        <option value="3">提前 3 天</option>
+        <option value="7">提前 1 週</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="saveEvent()">💾 儲存</button>
+    <button class="btn btn-danger mt-8" id="evtDeleteBtn" style="display:none" onclick="deleteEvent()">🗑️ 刪除此活動</button>
+  </div>
+</div>
+
+<!-- ===== Modal: 新增課程 ===== -->
+<div class="modal-overlay" id="classModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📚 新增課程</h3>
+      <button class="modal-close" onclick="closeModal('classModal')">✕</button>
+    </div>
+    <input type="hidden" id="clsEditId" value="">
+    <div class="form-group">
+      <label>課程名稱</label>
+      <input type="text" id="clsName" placeholder="例如：英文班">
+    </div>
+    <div class="form-group">
+      <label>圖示 Emoji</label>
+      <input type="text" id="clsEmoji" placeholder="例如：📖" value="📖" maxlength="2">
+    </div>
+    <div class="form-group">
+      <label>每堂價格 ($)</label>
+      <input type="number" id="clsPrice" placeholder="例如：300">
+    </div>
+    <div class="form-group">
+      <label>提醒剩餘堂數</label>
+      <input type="number" id="clsAlert" placeholder="例如：3（剩3堂時提醒）" value="3">
+    </div>
+    <button class="btn btn-primary" onclick="saveClass()">💾 儲存</button>
+    <button class="btn btn-danger mt-8" id="clsDeleteBtn" style="display:none" onclick="deleteClass()">🗑️ 刪除此課程</button>
+  </div>
+</div>
+
+<!-- ===== JavaScript ===== -->
+<script>
+// ==========================================
+// 資料庫 (IndexedDB)
+// ==========================================
+const DB_NAME = 'KidClassDB';
+const DB_VERSION = 1;
+let db;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('classes')) d.createObjectStore('classes', {keyPath:'id'});
+      if (!d.objectStoreNames.contains('invoices')) d.createObjectStore('invoices', {keyPath:'id'});
+      if (!d.objectStoreNames.contains('schedules')) d.createObjectStore('schedules', {keyPath:'id'});
+      if (!d.objectStoreNames.contains('events')) d.createObjectStore('events', {keyPath:'id'});
+    };
+    req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+    req.onerror = (e) => reject(e);
+  });
+}
+
+function dbPut(store, data) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    tx.objectStore(store).put(data);
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e);
+  });
+}
+
+function dbDelete(store, id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    tx.objectStore(store).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e);
+  });
+}
+
+function dbGetAll(store) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = (e) => reject(e);
+  });
+}
+
+// ==========================================
+// Tab Navigation
+// ==========================================
+function switchTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn')[
+    ['expense','calendar','events','classes','share'].indexOf(name)
+  ].classList.add('active');
+
+  if (name === 'calendar') renderCalendar();
+  if (name === 'expense') renderExpenses();
+  if (name === 'events') renderEvents();
+  if (name === 'classes') renderClasses();
+  if (name === 'share') { document.getElementById('shareDate').value = todayStr(); updateSharePreview(); }
+}
+
+// ==========================================
+// Helpers
+// ==========================================
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function todayStr() { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function formatMoney(n) { return '$' + Number(n).toLocaleString(); }
+function formatDate(s) { if (!s) return ''; const d = new Date(s); return (d.getMonth()+1)+'/'+ d.getDate(); }
+function formatDateFull(s) { if (!s) return ''; const d = new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(); }
+function formatWeekday(s) { return ['日','一','二','三','四','五','六'][new Date(s).getDay()]; }
+function daysUntil(s) { const d = new Date(s); const t = new Date(todayStr()); return Math.ceil((d-t)/(86400000)); }
+
+const statusMap = {scheduled:'已排課', completed:'已完成', absent:'缺課', makeup:'補堂'};
+const statusBadge = {scheduled:'badge-ok', completed:'badge-ok', absent:'badge-danger', makeup:'badge-warn'};
+
+// ==========================================
+// Modal
+// ==========================================
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+  refreshClassSelects();
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  document.querySelectorAll('#'+id+' input:not([type=hidden])').forEach(i => {
+    if (i.type === 'date') i.value = todayStr();
+    else if (i.id === 'clsEmoji') i.value = '📖';
+    else if (i.id === 'clsAlert') i.value = '3';
+    else i.value = '';
+  });
+  document.querySelectorAll('#'+id+' input[type=hidden]').forEach(i => i.value = '');
+  if (document.getElementById('schDeleteBtn')) document.getElementById('schDeleteBtn').style.display = 'none';
+  if (document.getElementById('evtDeleteBtn')) document.getElementById('evtDeleteBtn').style.display = 'none';
+  if (document.getElementById('clsDeleteBtn')) document.getElementById('clsDeleteBtn').style.display = 'none';
+}
+
+// ==========================================
+// Refresh class dropdowns
+// ==========================================
+async function refreshClassSelects() {
+  const classes = await dbGetAll('classes');
+  ['invClass','schClass'].forEach(selId => {
+    const sel = document.getElementById(selId);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- 請選擇課程 --</option>';
+    classes.forEach(c => {
+      sel.innerHTML += '<option value="'+c.id+'">'+c.emoji+' '+c.name+'</option>';
+    });
+  });
+}
+
+// ==========================================
+// 課程管理 (Classes)
+// ==========================================
+async function saveClass() {
+  const editId = document.getElementById('clsEditId').value;
+  const cls = {
+    id: editId || uid(),
+    name: document.getElementById('clsName').value.trim(),
+    emoji: document.getElementById('clsEmoji').value.trim() || '📖',
+    pricePerLesson: Number(document.getElementById('clsPrice').value) || 0,
+    alertAt: Number(document.getElementById('clsAlert').value) || 3,
+  };
+  if (!cls.name) { alert('請輸入課程名稱'); return; }
+  await dbPut('classes', cls);
+  closeModal('classModal');
+  renderClasses();
+}
+
+async function renderClasses() {
+  const classes = await dbGetAll('classes');
+  const schedules = await dbGetAll('schedules');
+  const invoices = await dbGetAll('invoices');
+  const el = document.getElementById('classList');
+
+  if (classes.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="icon">📚</div><p>尚無課程<br>先新增課程類別</p></div>';
+    return;
+  }
+
+  let html = '';
+  for (const c of classes) {
+    const totalPaid = invoices.filter(i => i.classId === c.id).reduce((s,i) => s + (i.lessons||0), 0);
+    const completed = schedules.filter(s => s.classId === c.id && (s.status==='completed' || s.status==='makeup')).length;
+    const remaining = totalPaid - completed;
+    const isAlert = remaining <= c.alertAt && remaining > 0;
+    const isDanger = remaining <= 0;
+    const badgeCls = isDanger ? 'badge-danger' : (isAlert ? 'badge-warn' : 'badge-ok');
+    const badgeText = isDanger ? '需繳費' : (isAlert ? '即將用完' : '剩 '+remaining+' 堂');
+
+    html += '<div class="list-item" onclick="editClass(\''+c.id+'\')">' +
+      '<span class="emoji">'+c.emoji+'</span>' +
+      '<div class="info"><div class="name">'+c.name+'</div>' +
+      '<div class="detail">每堂 '+formatMoney(c.pricePerLesson)+' · 已購 '+totalPaid+' 堂 · 已上 '+completed+' 堂</div></div>' +
+      '<span class="badge '+badgeCls+'">'+badgeText+'</span>' +
+      '</div>';
+  }
+  el.innerHTML = '<div class="card">' + html + '</div>';
+}
+
+async function editClass(id) {
+  const classes = await dbGetAll('classes');
+  const c = classes.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('clsEditId').value = c.id;
+  document.getElementById('clsName').value = c.name;
+  document.getElementById('clsEmoji').value = c.emoji;
+  document.getElementById('clsPrice').value = c.pricePerLesson;
+  document.getElementById('clsAlert').value = c.alertAt;
+  document.getElementById('clsDeleteBtn').style.display = 'block';
+  openModal('classModal');
+}
+
+async function deleteClass() {
+  const id = document.getElementById('clsEditId').value;
+  if (!id || !confirm('確定刪除此課程？相關的發票和課堂記錄不會被刪除。')) return;
+  await dbDelete('classes', id);
+  closeModal('classModal');
+  renderClasses();
+}
+
+// ==========================================
+// 發票管理 (Invoices)
+// ==========================================
+async function saveInvoice() {
+  const inv = {
+    id: uid(),
+    classId: document.getElementById('invClass').value,
+    amount: Number(document.getElementById('invAmount').value) || 0,
+    lessons: Number(document.getElementById('invLessons').value) || 0,
+    date: document.getElementById('invDate').value,
+    note: document.getElementById('invNote').value.trim(),
+  };
+  if (!inv.classId) { alert('請選擇課程'); return; }
+  if (!inv.amount) { alert('請輸入金額'); return; }
+  await dbPut('invoices', inv);
+  closeModal('invoiceModal');
+  renderExpenses();
+  renderClasses();
+}
+
+async function renderExpenses() {
+  const invoices = await dbGetAll('invoices');
+  const classes = await dbGetAll('classes');
+  const now = new Date();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+
+  let monthTotal = 0, yearTotal = 0;
+  invoices.forEach(i => {
+    const d = new Date(i.date);
+    if (d.getFullYear() === year) {
+      yearTotal += i.amount;
+      if (d.getMonth() === month) monthTotal += i.amount;
+    }
+  });
+  document.getElementById('monthlyTotal').textContent = formatMoney(monthTotal);
+  document.getElementById('yearlyTotal').textContent = formatMoney(yearTotal);
+  document.getElementById('monthLabel').textContent = (month+1) + '月';
+  document.getElementById('yearLabel').textContent = year + '年';
+
+  const el = document.getElementById('invoiceList');
+  const sorted = invoices.sort((a,b) => b.date.localeCompare(a.date));
+  if (sorted.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="icon">📄</div><p>尚無繳費記錄<br>點擊上方按鈕新增</p></div>';
+    return;
+  }
+  let html = '';
+  sorted.forEach(i => {
+    const cls = classes.find(c => c.id === i.classId);
+    const name = cls ? (cls.emoji+' '+cls.name) : '未知課程';
+    html += '<div class="list-item" onclick="deleteInvoice(\''+i.id+'\')">' +
+      '<div class="info"><div class="name">'+name+'</div>' +
+      '<div class="detail">'+formatDateFull(i.date)+' · '+i.lessons+'堂'+(i.note?' · '+i.note:'')+'</div></div>' +
+      '<span style="font-weight:700;color:var(--primary)">'+formatMoney(i.amount)+'</span></div>';
+  });
+  el.innerHTML = '<div class="card">' + html + '</div>';
+}
+
+async function deleteInvoice(id) {
+  if (!confirm('刪除此繳費記錄？')) return;
+  await dbDelete('invoices', id);
+  renderExpenses();
+  renderClasses();
+}
+
+// ==========================================
+// 日曆 (Calendar)
+// ==========================================
+let calYear, calMonth, selectedDate;
+
+function initCalendar() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  selectedDate = todayStr();
+}
+
+function changeMonth(delta) {
+  calMonth += delta;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+async function renderCalendar() {
+  const schedules = await dbGetAll('schedules');
+  const events = await dbGetAll('events');
+  document.getElementById('calMonthTitle').textContent = calYear + '年' + (calMonth+1) + '月';
+
+  const eventDates = new Set();
+  schedules.forEach(s => eventDates.add(s.date));
+  events.forEach(e => eventDates.add(e.date));
+
+  const grid = document.getElementById('calGrid');
+  const labels = ['日','一','二','三','四','五','六'];
+  let html = labels.map(l => '<div class="day-label">'+l+'</div>').join('');
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    html += '<div class="day other-month">'+(prevDays-firstDay+1+i)+'</div>';
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isToday = ds === todayStr();
+    const hasEvt = eventDates.has(ds);
+    html += '<div class="day'+(isToday?' today':'')+(hasEvt?' has-event':'')+'" onclick="selectDate(\''+ds+'\')">'+d+'</div>';
+  }
+  const totalCells = firstDay + daysInMonth;
+  const remaining = (7 - totalCells % 7) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    html += '<div class="day other-month">'+i+'</div>';
+  }
+  grid.innerHTML = html;
+  renderDaySchedule(selectedDate || todayStr());
+}
+
+async function selectDate(ds) {
+  selectedDate = ds;
+  renderDaySchedule(ds);
+}
+
+async function renderDaySchedule(ds) {
+  const schedules = await dbGetAll('schedules');
+  const events = await dbGetAll('events');
+  const classes = await dbGetAll('classes');
+  const title = document.getElementById('selectedDateTitle');
+  title.textContent = formatDateFull(ds) + ' 週' + formatWeekday(ds);
+
+  const daySch = schedules.filter(s => s.date === ds).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+  const dayEvt = events.filter(e => e.date === ds);
+  const el = document.getElementById('daySchedule');
+
+  if (daySch.length === 0 && dayEvt.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="icon">📅</div><p>當日無行程</p></div>';
+    return;
+  }
+
+  let html = '';
+  dayEvt.forEach(e => {
+    html += '<div class="schedule-item" onclick="editEvent(\''+e.id+'\')">' +
+      '<div class="dot" style="background:var(--accent)"></div>' +
+      '<div class="time">'+(e.time||'全天')+'</div>' +
+      '<div class="title">🎉 '+e.title+(e.items?' · 攜帶：'+e.items:'')+'</div></div>';
+  });
+  daySch.forEach(s => {
+    const cls = classes.find(c => c.id === s.classId);
+    const name = cls ? (cls.emoji+' '+cls.name) : '課堂';
+    html += '<div class="schedule-item status-'+s.status+'" onclick="editSchedule(\''+s.id+'\')">' +
+      '<div class="dot"></div>' +
+      '<div class="time">'+(s.time||'')+'</div>' +
+      '<div class="title">'+name+(s.note?' · '+s.note:'')+'</div>' +
+      '<span class="badge '+statusBadge[s.status]+'">'+statusMap[s.status]+'</span></div>';
+  });
+  el.innerHTML = html;
+}
+
+// ==========================================
+// 課堂排課 (Schedules)
+// ==========================================
+async function saveSchedule() {
+  const editId = document.getElementById('schEditId').value;
+  const sch = {
+    id: editId || uid(),
+    classId: document.getElementById('schClass').value,
+    date: document.getElementById('schDate').value,
+    time: document.getElementById('schTime').value,
+    status: document.getElementById('schStatus').value,
+    note: document.getElementById('schNote').value.trim(),
+  };
+  if (!sch.classId) { alert('請選擇課程'); return; }
+  if (!sch.date) { alert('請選擇日期'); return; }
+  await dbPut('schedules', sch);
+  closeModal('scheduleModal');
+  renderCalendar();
+  renderClasses();
+}
+
+async function editSchedule(id) {
+  const schedules = await dbGetAll('schedules');
+  const s = schedules.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('schEditId').value = s.id;
+  document.getElementById('schDate').value = s.date;
+  document.getElementById('schTime').value = s.time;
+  document.getElementById('schStatus').value = s.status;
+  document.getElementById('schNote').value = s.note || '';
+  document.getElementById('schDeleteBtn').style.display = 'block';
+  openModal('scheduleModal');
+  setTimeout(() => { document.getElementById('schClass').value = s.classId; }, 100);
+}
+
+async function deleteSchedule() {
+  const id = document.getElementById('schEditId').value;
+  if (!id || !confirm('刪除此課堂？')) return;
+  await dbDelete('schedules', id);
+  closeModal('scheduleModal');
+  renderCalendar();
+  renderClasses();
+}
+
+// ==========================================
+// 活動提醒 (Events)
+// ==========================================
+async function saveEvent() {
+  const editId = document.getElementById('evtEditId').value;
+  const evt = {
+    id: editId || uid(),
+    title: document.getElementById('evtTitle').value.trim(),
+    date: document.getElementById('evtDate').value,
+    time: document.getElementById('evtTime').value,
+    items: document.getElementById('evtItems').value.trim(),
+    reminderDays: Number(document.getElementById('evtReminder').value),
+  };
+  if (!evt.title) { alert('請輸入活動名稱'); return; }
+  if (!evt.date) { alert('請選擇日期'); return; }
+  await dbPut('events', evt);
+  closeModal('eventModal');
+  renderEvents();
+  renderCalendar();
+}
+
+async function renderEvents() {
+  const events = await dbGetAll('events');
+  const el = document.getElementById('upcomingEvents');
+  const upcoming = events.filter(e => daysUntil(e.date) >= 0).sort((a,b) => a.date.localeCompare(b.date));
+
+  if (upcoming.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="icon">🎉</div><p>尚無即將到來的活動</p></div>';
+    return;
+  }
+
+  let html = '';
+  upcoming.forEach(e => {
+    const days = daysUntil(e.date);
+    const urgency = days === 0 ? 'badge-danger' : (days <= 3 ? 'badge-warn' : 'badge-ok');
+    const dayText = days === 0 ? '今天！' : days + ' 天後';
+    html += '<div class="card" onclick="editEvent(\''+e.id+'\')" style="cursor:pointer">' +
+      '<div style="display:flex;justify-content:space-between;align-items:start">' +
+      '<div><div style="font-weight:700;font-size:15px">🎉 '+e.title+'</div>' +
+      '<div style="font-size:12px;color:var(--text-light);margin-top:4px">'+formatDateFull(e.date)+' 週'+formatWeekday(e.date)+(e.time?' '+e.time:'')+'</div>' +
+      (e.items ? '<div style="margin-top:6px">'+e.items.split(',').map(x=>'<span class="chip">🎒 '+x.trim()+'</span>').join('')+'</div>' : '') +
+      '</div><span class="badge '+urgency+'">'+dayText+'</span></div></div>';
+  });
+  el.innerHTML = html;
+}
+
+async function editEvent(id) {
+  const events = await dbGetAll('events');
+  const e = events.find(x => x.id === id);
+  if (!e) return;
+  document.getElementById('evtEditId').value = e.id;
+  document.getElementById('evtTitle').value = e.title;
+  document.getElementById('evtDate').value = e.date;
+  document.getElementById('evtTime').value = e.time || '';
+  document.getElementById('evtItems').value = e.items || '';
+  document.getElementById('evtReminder').value = e.reminderDays;
+  document.getElementById('evtDeleteBtn').style.display = 'block';
+  openModal('eventModal');
+}
+
+async function deleteEvent() {
+  const id = document.getElementById('evtEditId').value;
+  if (!id || !confirm('刪除此活動？')) return;
+  await dbDelete('events', id);
+  closeModal('eventModal');
+  renderEvents();
+  renderCalendar();
+}
+
+// ==========================================
+// 日曆分享 (Share)
+// ==========================================
+async function updateSharePreview() {
+  const type = document.getElementById('shareType').value;
+  const dateStr = document.getElementById('shareDate').value;
+  if (!dateStr) { document.getElementById('sharePreview').textContent = '請選擇日期'; return; }
+
+  const schedules = await dbGetAll('schedules');
+  const events = await dbGetAll('events');
+  const classes = await dbGetAll('classes');
+
+  let dates = [];
+  if (type === 'day') {
+    dates = [dateStr];
+  } else {
+    const d = new Date(dateStr);
+    const dayOfWeek = d.getDay();
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    for (let i = 0; i < 7; i++) {
+      const dd = new Date(monday);
+      dd.setDate(monday.getDate() + i);
+      dates.push(dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0'));
+    }
+  }
+
+  let text = '📅 ';
+  if (type === 'day') {
+    text += formatDateFull(dateStr) + '（週' + formatWeekday(dateStr) + '）行程\n';
+  } else {
+    text += formatDateFull(dates[0]) + ' ~ ' + formatDateFull(dates[6]) + ' 一週行程\n';
+  }
+  text += '─────────────\n';
+
+  let hasContent = false;
+  dates.forEach(ds => {
+    const daySch = schedules.filter(s => s.date === ds).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    const dayEvt = events.filter(e => e.date === ds);
+    if (daySch.length === 0 && dayEvt.length === 0) return;
+
+    hasContent = true;
+    text += '\n📌 ' + formatDate(ds) + '（週' + formatWeekday(ds) + '）\n';
+    dayEvt.forEach(e => {
+      text += '  🎉 ' + (e.time||'全天') + ' ' + e.title + (e.items ? '\n     🎒 攜帶：'+e.items : '') + '\n';
+    });
+    daySch.forEach(s => {
+      const cls = classes.find(c => c.id === s.classId);
+      const name = cls ? cls.name : '課堂';
+      text += '  📖 ' + (s.time||'') + ' ' + name + '（' + statusMap[s.status] + '）' + (s.note?'\n     💬 '+s.note:'') + '\n';
+    });
+  });
+
+  if (!hasContent) text += '\n暫無行程安排 🎉';
+  text += '\n─────────────\n由「童學管家」生成 ✨';
+
+  document.getElementById('sharePreview').textContent = text;
+}
+
+function copyShareText() {
+  const text = document.getElementById('sharePreview').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    alert('✅ 已複製！可以貼到 WhatsApp 了');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('✅ 已複製！可以貼到 WhatsApp 了');
+  });
+}
+
+// ==========================================
+// 匯出 / 匯入備份
+// ==========================================
+async function exportData() {
+  const data = {
+    classes: await dbGetAll('classes'),
+    invoices: await dbGetAll('invoices'),
+    schedules: await dbGetAll('schedules'),
+    events: await dbGetAll('events'),
+    exportDate: new Date().toISOString(),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'kidclass-backup-' + todayStr() + '.json';
+  a.click();
+}
+
+async function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  try {
+    const data = JSON.parse(text);
+    if (!confirm('匯入將覆蓋現有數據，確定繼續？')) return;
+    for (const c of (data.classes||[])) await dbPut('classes', c);
+    for (const i of (data.invoices||[])) await dbPut('invoices', i);
+    for (const s of (data.schedules||[])) await dbPut('schedules', s);
+    for (const ev of (data.events||[])) await dbPut('events', ev);
+    alert('✅ 匯入成功！');
+    renderAll();
+  } catch(err) { alert('❌ 檔案格式錯誤'); }
+  e.target.value = '';
+}
+
+// ==========================================
+// 通知提醒
+// ==========================================
+async function checkReminders() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+  if (Notification.permission !== 'granted') return;
+
+  const today = todayStr();
+  const events = await dbGetAll('events');
+  const classes = await dbGetAll('classes');
+  const invoices = await dbGetAll('invoices');
+  const schedules = await dbGetAll('schedules');
+
+  // Event reminders
+  events.forEach(e => {
+    const days = daysUntil(e.date);
+    if (days === e.reminderDays || days === 0) {
+      new Notification('🎉 活動提醒：' + e.title, {
+        body: (days === 0 ? '今天！' : days + '天後') + (e.items ? '\n🎒 記得帶：'+e.items : ''),
+      });
+    }
+  });
+
+  // Lesson count alerts
+  for (const c of classes) {
+    const totalPaid = invoices.filter(i => i.classId === c.id).reduce((s,i) => s + (i.lessons||0), 0);
+    const completed = schedules.filter(s => s.classId === c.id && (s.status==='completed'||s.status==='makeup')).length;
+    const remaining = totalPaid - completed;
+    if (remaining > 0 && remaining <= c.alertAt) {
+      new Notification('⚠️ '+c.emoji+' '+c.name+' 快用完了！', {
+        body: '剩餘 '+remaining+' 堂，記得繳費續堂',
+      });
+    }
+  }
+}
+
+// ==========================================
+// Service Worker Registration
+// ==========================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ==========================================
+// Init
+// ==========================================
+function renderAll() {
+  renderExpenses();
+  renderClasses();
+  renderCalendar();
+  renderEvents();
+}
+
+async function init() {
+  await openDB();
+  initCalendar();
+
+  const now = new Date();
+  const weekdays = ['日','一','二','三','四','五','六'];
+  document.getElementById('headerDate').textContent =
+    now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日 週'+weekdays[now.getDay()];
+
+  document.querySelectorAll('input[type=date]').forEach(i => { if(!i.value) i.value = todayStr(); });
+
+  renderAll();
+
+  setTimeout(checkReminders, 2000);
+  setInterval(checkReminders, 3600000);
+
+  if ('Notification' in window && Notification.permission === 'default') {
+    setTimeout(() => Notification.requestPermission(), 3000);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
+
